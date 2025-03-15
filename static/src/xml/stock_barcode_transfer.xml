@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates id="template" xml:space="preserve">
+    <!-- Plantilla para mostrar mensajes de feedback al escanear -->
+    <t t-name="stock_barcode_transfer.BarcodeNotification">
+        <div class="o_notification_manager">
+            <div class="o_notification">
+                <div t-attf-class="notification-alert alert {{type}}">
+                    <i t-attf-class="fa {{icon}} mr8"></i>
+                    <t t-esc="message"/>
+                </div>
+            </div>
+        </div>
+    </t>
+
+    <!-- Plantilla para el widget de escáner de barcode -->
+    <t t-name="stock_barcode_transfer.BarcodeScanner">
+        <div class="o_barcode_scanner">
+            <i class="fa fa-barcode"></i>
+            <span>Escanear producto</span>
+        </div>
+    </t>
+</templates>

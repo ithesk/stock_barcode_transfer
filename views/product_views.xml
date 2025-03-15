@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vista de formulario para la plantilla de producto -->
+    <record id="product_template_barcode_form_view_inherit" model="ir.ui.view">
+        <field name="name">product.template.barcode.form.inherit</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_form_view"/>
+        <field name="arch" type="xml">
+            <div name="options" position="inside">
+                <div>
+                    <button name="generate_barcode" string="Generar Código de Barras" 
+                            type="object" class="btn btn-link"/>
+                    <button name="print_product_barcode" string="Imprimir Código de Barras" 
+                            type="object" class="btn btn-link" 
+                            attrs="{'invisible': [('product_variant_count', '>', 1)]}"/>
+                </div>
+            </div>
+        </field>
+    </record>
+    
+    <!-- Vista de formulario para la variante de producto -->
+    <record id="product_product_barcode_form_view_inherit" model="ir.ui.view">
+        <field name="name">product.product.barcode.form.inherit</field>
+        <field name="model">product.product</field>
+        <field name="inherit_id" ref="product.product_normal_form_view"/>
+        <field name="arch" type="xml">
+            <div name="options" position="inside">
+                <div>
+                    <button name="generate_barcode" string="Generar Código de Barras" 
+                            type="object" class="btn btn-link"/>
+                    <button name="print_barcode_label" string="Imprimir Código de Barras" 
+                            type="object" class="btn btn-link"/>
+                </div>
+            </div>
+        </field>
+    </record>
+    
+    <!-- Acción para generar códigos de barras en masa (plantillas) -->
+    <record id="action_bulk_generate_barcodes_template" model="ir.actions.server">
+        <field name="name">Generar Códigos de Barras</field>
+        <field name="model_id" ref="product.model_product_template"/>
+        <field name="binding_model_id" ref="product.model_product_template"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">
+action = records.generate_barcode()
+        </field>
+    </record>
+    
+    <!-- Acción para generar códigos de barras en masa (variantes) -->
+    <record id="action_bulk_generate_barcodes_product" model="ir.actions.server">
+        <field name="name">Generar Códigos de Barras</field>
+        <field name="model_id" ref="product.model_product_product"/>
+        <field name="binding_model_id" ref="product.model_product_product"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">
+action = records.bulk_generate_barcodes()
+        </field>
+    </record>
+    
+    <!-- Menú específico para generación de códigos de barras -->
+    <record id="action_barcode_generator" model="ir.actions.act_window">
+        <field name="name">Generador de Códigos de Barras</field>
+        <field name="res_model">product.product</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_type">form</field>
+        <field name="domain">[('barcode', '=', False)]</field>
+        <field name="context">{'default_filter_products_without_barcode': True}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No hay productos sin código de barras
+            </p>
+            <p>
+                Todos los productos ya tienen un código de barras asignado.
+            </p>
+        </field>
+    </record>
+    
+    <menuitem id="menu_barcode_generator" 
+              name="Generador de Códigos de Barras"
+              parent="stock.menu_stock_config_settings" 
+              action="action_barcode_generator"
+              sequence="101"/>
+</odoo>

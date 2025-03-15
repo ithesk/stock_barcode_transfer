@@ -1,0 +1,72 @@
+/* Estilos para el módulo de transferencia con códigos de barras */
+.o_field_barcode_handler {
+    padding: 8px 12px !important;
+    border: 2px solid #7C7BAD !important;
+    border-radius: 4px !important;
+    background-color: #f8f9fa !important;
+    margin-bottom: 10px !important;
+    font-size: 16px !important;
+    width: 100% !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+    transition: all 0.3s ease !important;
+}
+
+.o_field_barcode_handler:focus {
+    border-color: #875A7B !important;
+    box-shadow: 0 0 0 3px rgba(135, 90, 123, 0.25) !important;
+    outline: none !important;
+}
+
+.o_field_barcode_handler::placeholder {
+    color: #adb5bd !important;
+}
+
+.o_barcode_scanner_input {
+    position: relative !important;
+}
+
+.o_barcode_scanner_input:before {
+    content: "\f02a" !important;
+    font-family: FontAwesome !important;
+    position: absolute !important;
+    left: 10px !important;
+    top: 8px !important;
+    font-size: 18px !important;
+    color: #7C7BAD !important;
+}
+
+/* Estilos para líneas de productos dañados */
+.transfer-line-damaged td {
+    background-color: #fff3cd !important;
+    color: #856404 !important;
+}
+
+/* Estilos para el botón de escaneo */
+.o_scan_button {
+    background-color: #7C7BAD !important;
+    color: white !important;
+    font-weight: bold !important;
+    padding: 8px 16px !important;
+    border-radius: 4px !important;
+    transition: all 0.3s ease !important;
+}
+
+.o_scan_button:hover {
+    background-color: #6b5c9d !important;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Estilos para el encabezado de escaneo */
+.o_barcode_header {
+    background-color: #f8f9fa !important;
+    padding: 15px !important;
+    border-bottom: 1px solid #ddd !important;
+    margin-bottom: 15px !important;
+    text-align: center !important;
+}
+
+.o_barcode_header h3 {
+    margin: 0 !important;
+    color: #4c4c4c !important;
+    font-size: 18px !important;
+}

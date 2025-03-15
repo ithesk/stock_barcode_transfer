@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <!-- Secuencia para las transferencias entre localidades -->
+        <record id="seq_stock_location_transfer" model="ir.sequence">
+            <field name="name">Transferencia entre Localidades</field>
+            <field name="code">stock.location.transfer</field>
+            <field name="prefix">TRF/%(year)s/</field>
+            <field name="padding">5</field>
+            <field name="company_id" eval="False"/>
+        </record>
+    </data>
+</odoo>

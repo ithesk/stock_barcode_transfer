@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vista de formulario para transferencias -->
+    <record id="view_stock_location_transfer_form" model="ir.ui.view">
+        <field name="name">stock.location.transfer.form</field>
+        <field name="model">stock.location.transfer</field>
+        <field name="arch" type="xml">
+            <form string="Transferencia entre Localidades">
+                <header>
+                    <button name="action_start" string="Iniciar Transferencia" type="object" 
+                            class="oe_highlight" states="draft"/>
+                    <button name="action_done" string="Finalizar Transferencia" type="object" 
+                            class="oe_highlight" states="in_progress" 
+                            attrs="{'invisible': [('reception_validated', '=', False)]}"/>
+                    <button name="validate_all_reception" string="Validar Toda la Recepción" type="object" 
+                            class="oe_highlight" states="in_progress" 
+                            attrs="{'invisible': [('reception_validated', '=', True)]}"/>
+                    <button name="action_cancel" string="Cancelar" type="object" 
+                            states="draft,in_progress"/>
+                    <button name="action_print_reception_report" string="Imprimir Reporte de Recepción" 
+                            type="object" states="in_progress,done"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,in_progress,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_picking" type="object" class="oe_stat_button" 
+                                icon="fa-truck" attrs="{'invisible': [('picking_id', '=', False)]}">
+                            <field name="picking_id" invisible="1"/>
+                            <span>Albarán</span>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="date"/>
+                            <field name="user_id"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="reception_validated" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="origin_location_id" options="{'no_create': True}"/>
+                            <field name="dest_location_id" options="{'no_create': True}"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Productos" name="products">
+                            <div attrs="{'invisible': [('state', 'not in', ['draft', 'in_progress'])]}">
+                              <group>
+                                <field name="scanned_product_code" widget="barcode_handler" 
+                                    placeholder="Escanear o introducir código de barras aquí" 
+                                    attrs="{'invisible': [('state', 'not in', ['draft', 'in_progress'])]}"/>
+                            </group>
+                            </div>
+                            <field name="transfer_line_ids">
+                                <tree editable="bottom">
+                                    <field name="product_id" force_save="1" 
+                                           attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                                    <field name="product_qty" force_save="1" 
+                                           attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                                    <field name="qty_done" force_save="1" 
+                                           attrs="{'readonly': [('state', 'not in', ['in_progress'])]}"/>
+                                    <field name="product_uom_id" groups="uom.group_uom" 
+                                           attrs="{'readonly': [('state', '!=', 'draft')]}"/>
+                                    <field name="lot_id" groups="stock.group_production_lot" 
+                                           domain="[('product_id', '=', product_id)]" 
+                                           attrs="{'readonly': [('state', '!=', 'in_progress')]}"/>
+                                    <field name="is_damaged" readonly="1"/>
+                                    <button name="mark_as_damaged" string="Reportar Daño" type="object" 
+                                            icon="fa-exclamation-triangle" 
+                                            attrs="{'invisible': ['|', ('state', '!=', 'in_progress'), ('is_damaged', '=', True)]}"/>
+                                    <field name="state" invisible="1"/>
+                                </tree>
+                            </field>
+                        </page>
+                        <page string="Notas" name="notes">
+                            <field name="note" placeholder="Añadir notas adicionales aquí..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <!-- <field name="message_follower_ids" widget="mail_followers"/> -->
+                    <!-- <field name="message_ids" widget="mail_thread"/> -->
+                </div>
+            </form>
+        </field>
+    </record>
+    
+    <!-- Vista de árbol para transferencias -->
+    <record id="view_stock_location_transfer_tree" model="ir.ui.view">
+        <field name="name">stock.location.transfer.tree</field>
+        <field name="model">stock.location.transfer</field>
+        <field name="arch" type="xml">
+            <tree decoration-info="state == 'draft'" decoration-muted="state == 'cancelled'" 
+                  decoration-success="state == 'done'" decoration-warning="state == 'in_progress'">
+                <field name="name"/>
+                <field name="date"/>
+                <field name="user_id"/>
+                <field name="origin_location_id"/>
+                <field name="dest_location_id"/>
+                <field name="state"/>
+            </tree>
+        </field>
+    </record>
+    
+    <!-- Vista de búsqueda para transferencias -->
+    <record id="view_stock_location_transfer_search" model="ir.ui.view">
+        <field name="name">stock.location.transfer.search</field>
+        <field name="model">stock.location.transfer</field>
+        <field name="arch" type="xml">
+            <search string="Transferencias entre Localidades">
+                <field name="name"/>
+                <field name="user_id"/>
+                <field name="origin_location_id"/>
+                <field name="dest_location_id"/>
+                <filter string="Mis Transferencias" name="my_transfers" 
+                        domain="[('user_id', '=', uid)]"/>
+                <filter string="Borrador" name="draft" domain="[('state', '=', 'draft')]"/>
+                <filter string="En Progreso" name="in_progress" domain="[('state', '=', 'in_progress')]"/>
+                <filter string="Realizado" name="done" domain="[('state', '=', 'done')]"/>
+                <filter string="Cancelado" name="cancelled" domain="[('state', '=', 'cancelled')]"/>
+                <group expand="0" string="Agrupar Por">
+                    <filter string="Responsable" name="group_by_user" context="{'group_by': 'user_id'}"/>
+                    <filter string="Origen" name="group_by_origin" context="{'group_by': 'origin_location_id'}"/>
+                    <filter string="Destino" name="group_by_dest" context="{'group_by': 'dest_location_id'}"/>
+                    <filter string="Estado" name="group_by_state" context="{'group_by': 'state'}"/>
+                    <filter string="Mes" name="group_by_month" context="{'group_by': 'date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+    
+    <!-- Vista Kanban para transferencias -->
+    <record id="view_stock_location_transfer_kanban" model="ir.ui.view">
+        <field name="name">stock.location.transfer.kanban</field>
+        <field name="model">stock.location.transfer</field>
+        <field name="arch" type="xml">
+            <kanban class="o_kanban_mobile">
+                <field name="name"/>
+                <field name="date"/>
+                <field name="user_id"/>
+                <field name="origin_location_id"/>
+                <field name="dest_location_id"/>
+                <field name="state"/>
+                <templates>
+                    <t t-name="kanban-box">
+                        <div t-attf-class="oe_kanban_card oe_kanban_global_click">
+                            <div class="row">
+                                <div class="col-6">
+                                    <strong><field name="name"/></strong>
+                                </div>
+                                <div class="col-6 text-right">
+                                    <span class="badge badge-pill" 
+                                          t-attf-class="badge-#{{'draft': 'secondary', 'in_progress': 'warning', 
+                                                               'done': 'success', 'cancelled': 'danger'}[record.state.raw_value]}">
+                                        <field name="state"/>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-12">
+                                    <span><field name="origin_location_id"/> → <field name="dest_location_id"/></span>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-6">
+                                    <span><field name="date"/></span>
+                                </div>
+                                <div class="col-6 text-right">
+                                    <span><field name="user_id"/></span>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+    
+    <!-- Vista de formulario para el asistente de daños -->
+    <record id="view_stock_location_transfer_damage_wizard_form" model="ir.ui.view">
+        <field name="name">stock.location.transfer.damage.wizard.form</field>
+        <field name="model">stock.location.transfer.damage.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Registrar Daño en Producto">
+                <group>
+                    <field name="transfer_line_id" invisible="1"/>
+                    <field name="damage_notes" placeholder="Describa el daño en detalle..."/>
+                    <field name="action"/>
+                </group>
+                <footer>
+                    <button name="confirm_damage" string="Confirmar" type="object" class="btn-primary"/>
+                    <button string="Cancelar" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+    
+    <!-- Vista de formulario para productos (extensión) -->
+    <record id="product_template_barcode_form_view_inherit" model="ir.ui.view">
+        <field name="name">product.template.barcode.form.inherit</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='options']" position="inside">
+                <div>
+                    <button name="print_product_barcode" string="Imprimir Código de Barras" 
+                            type="object" class="btn btn-link" 
+                            attrs="{'invisible': [('product_variant_count', '>', 1)]}"/>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+    
+    <record id="product_product_barcode_form_view_inherit" model="ir.ui.view">
+        <field name="name">product.product.barcode.form.inherit</field>
+        <field name="model">product.product</field>
+        <field name="inherit_id" ref="product.product_normal_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='options']" position="inside">
+                <div>
+                    <button name="print_barcode_label" string="Imprimir Código de Barras" 
+                            type="object" class="btn btn-link"/>
+                </div>
+            </xpath>
+            <xpath expr="//field[@name='barcode']" position="after">
+                <button name="generate_barcode" string="Generar Código" type="object" 
+                        class="btn btn-sm btn-secondary" 
+                        attrs="{'invisible': [('barcode', '!=', False)]}"/>
+            </xpath>
+        </field>
+    </record>
+    
+    <!-- Acción para generar códigos de barras en masa -->
+    <record id="action_bulk_generate_barcodes" model="ir.actions.server">
+        <field name="name">Generar Códigos de Barras</field>
+        <field name="model_id" ref="product.model_product_product"/>
+        <field name="binding_model_id" ref="product.model_product_product"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">
+            action = model.bulk_generate_barcodes()
+        </field>
+    </record>
+    
+    <!-- Acción para abrir transferencias -->
+    <record id="action_stock_location_transfer" model="ir.actions.act_window">
+        <field name="name">Transferencias con Código de Barras</field>
+        <field name="res_model">stock.location.transfer</field>
+        <field name="view_mode">tree,form,kanban</field>
+        <field name="search_view_id" ref="view_stock_location_transfer_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Crear una nueva transferencia entre localidades con código de barras
+            </p>
+            <p>
+                Este módulo le permite transferir productos entre localidades utilizando códigos de barras 
+                para una validación rápida y sin errores.
+            </p>
+        </field>
+    </record>
+    
+    <!-- Menú para acceder a las transferencias -->
+    <menuitem id="menu_stock_barcode_transfer_root" 
+              name="Transferencias por Código de Barras" 
+              parent="stock.menu_stock_warehouse_mgmt" 
+              sequence="30"/>
+              
+    <menuitem id="menu_stock_location_transfer" 
+              name="Transferencias" 
+              parent="menu_stock_barcode_transfer_root" 
+              action="action_stock_location_transfer" 
+              sequence="10"/>
+</odoo>

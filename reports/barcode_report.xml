@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Reporte de etiqueta de producto -->
+    <record id="report_product_barcode" model="ir.actions.report">
+        <field name="name">Etiqueta de Código de Barras</field>
+        <field name="model">product.product</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">stock_barcode_transfer.report_product_barcode_label</field>
+        <field name="report_file">stock_barcode_transfer.report_product_barcode_label</field>
+        <field name="binding_model_id" ref="product.model_product_product"/>
+        <field name="binding_type">report</field>
+        <field name="print_report_name">'Etiqueta - %s' % (object.name)</field>
+    </record>
+    
+    <!-- Plantilla para etiqueta de código de barras de productos -->
+    <template id="report_product_barcode_label">
+        <t t-call="web.basic_layout">
+            <t t-foreach="docs" t-as="product">
+                <div class="page" style="text-align: center; padding: 0.5cm;">
+                    <div style="border: 1px solid #ddd; padding: 10px; max-width: 10cm; margin: 0 auto;">
+                        <h3 t-field="product.name" style="margin-top: 0;"/>
+                        <div t-if="product.default_code">
+                            <span t-field="product.default_code"/>
+                        </div>
+                        
+                        <div style="margin: 20px 0;">
+                            <img t-if="product.barcode" t-att-src="'/report/barcode/?type=Code128&amp;value=%s&amp;width=300&amp;height=80' % product.barcode"/>
+                            <div t-if="product.barcode" style="font-size: 14px; margin-top: 5px;">
+                                <span t-field="product.barcode"/>
+                            </div>
+                            <div t-if="not product.barcode" style="font-size: 14px; color: red; margin-top: 5px;">
+                                No tiene código de barras
+                            </div>
+                        </div>
+                        
+                        <div style="margin-top: 10px;">
+                            <span t-field="product.company_id.name"/>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </t>
+    </template>
+</odoo>

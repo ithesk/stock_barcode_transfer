@@ -1,0 +1,204 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Definición del reporte -->
+    <record id="report_reception_transfer" model="ir.actions.report">
+        <field name="name">Reporte de Recepción</field>
+        <field name="model">stock.location.transfer</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">stock_barcode_transfer.report_reception_transfer</field>
+        <field name="report_file">stock_barcode_transfer.report_reception_transfer</field>
+        <field name="binding_model_id" ref="model_stock_location_transfer"/>
+        <field name="binding_type">report</field>
+        <field name="print_report_name">'Recepción - %s' % (object.name)</field>
+    </record>
+
+
+    <!-- Plantilla de reporte de recepción corregida -->
+    <template id="report_reception_transfer">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <div class="row mb-4">
+                            <div class="col-12 text-center">
+                                <h3>Reporte de Recepción</h3>
+                            </div>
+                        </div>
+                        
+                        <!-- Información principal -->
+                        <div class="row">
+                            <div class="col-6">
+                                <p><strong>Transferencia:</strong> <span t-field="o.name"/></p>
+                                <p><strong>Fecha:</strong> <span t-field="o.date" t-options='{"format": "dd/MM/yyyy HH:mm:ss"}'></span></p>
+                                <p><strong>Responsable:</strong> <span t-field="o.user_id"/></p>
+                            </div>
+                            <div class="col-6">
+                                <p><strong>Estado:</strong> <span t-field="o.state"/></p>
+                                <p><strong>Origen:</strong> <span t-field="o.origin_location_id"/></p>
+                                <p><strong>Destino:</strong> <span t-field="o.dest_location_id"/></p>
+                            </div>
+                        </div>
+                        
+                        <!-- Tabla de productos -->
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <table class="table table-sm table-bordered">
+                                    <thead>
+                                        <tr>
+                                            <th>Producto</th>
+                                            <th>Código de Barras</th>
+                                            <th class="text-right">Cantidad Planificada</th>
+                                            <th class="text-right">Cantidad Recibida</th>
+                                            <th>Estado</th>
+                                            <th>Observaciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr t-foreach="o.transfer_line_ids" t-as="line">
+                                            <td>
+                                                <span t-field="line.product_id"/>
+                                                <t t-if="line.lot_id">
+                                                    <br/><small>Lote: <span t-field="line.lot_id"/></small>
+                                                </t>
+                                            </td>
+                                            <td>
+                                                <span t-field="line.product_id.barcode"/>
+                                            </td>
+                                            <td class="text-right">
+                                                <span t-field="line.product_qty"/>
+                                                <span t-field="line.product_uom_id" groups="uom.group_uom"/>
+                                            </td>
+                                            <td class="text-right">
+                                                <span t-field="line.qty_done"/>
+                                                <span t-field="line.product_uom_id" groups="uom.group_uom"/>
+                                            </td>
+                                            <td>
+                                                <t t-if="line.is_damaged">
+                                                    <span>Dañado</span>
+                                                </t>
+                                                <t t-elif="line.qty_done &lt; line.product_qty">
+                                                    <span>Parcial</span>
+                                                </t>
+                                                <t t-elif="line.qty_done == line.product_qty">
+                                                    <span>Completo</span>
+                                                </t>
+                                            </td>
+                                            <td>
+                                                <t t-if="line.is_damaged">
+                                                    <small t-field="line.damage_notes"/>
+                                                </t>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <td>Total</td>
+                                            <td></td>
+                                            <td class="text-right">
+                                                <span t-esc="sum(line.product_qty for line in o.transfer_line_ids)"/>
+                                            </td>
+                                            <td class="text-right">
+                                                <span t-esc="sum(line.qty_done for line in o.transfer_line_ids)"/>
+                                            </td>
+                                            <td colspan="2"></td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <!-- Resumen -->
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <p><strong>Resumen:</strong></p>
+                                <ul>
+                                    <li>Total Productos: <t t-esc="len(o.transfer_line_ids)"/></li>
+                                    <li>Productos Dañados: <t t-esc="len(o.transfer_line_ids.filtered(lambda l: l.is_damaged))"/></li>
+                                    <li>Productos Completos: <t t-esc="len(o.transfer_line_ids.filtered(lambda l: l.qty_done == l.product_qty and not l.is_damaged))"/></li>
+                                    <li>Productos Parciales: <t t-esc="len(o.transfer_line_ids.filtered(lambda l: l.qty_done &lt; l.product_qty))"/></li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <!-- Firmas -->
+                        <div class="row mt-5">
+                            <div class="col-6 text-center">
+                                <p>___________________________</p>
+                                <p><strong>Responsable de Envío</strong></p>
+                                <p t-field="o.user_id.name"/>
+                            </div>
+                            <div class="col-6 text-center">
+                                <p>___________________________</p>
+                                <p><strong>Responsable de Recepción</strong></p>
+                            </div>
+                        </div>
+                        
+                        <!-- Información de la empresa - Una sola vez -->
+                        <div class="row mt-5">
+                            <div class="col-6">
+                                <p><strong>Teléfono:</strong> <span t-field="o.company_id.phone"/></p>
+                                <p><strong>Sitio web:</strong> <span t-field="o.company_id.website"/></p>
+                                <p><strong>Dirección:</strong> <span t-field="o.company_id.street"/>, <span t-field="o.company_id.street2"/>, <span t-field="o.company_id.city"/> (<span t-field="o.company_id.country_id.code"/>) - <span t-field="o.company_id.country_id.name"/></p>
+                            </div>
+                            <div class="col-6">
+                                <p><strong>Correo:</strong> <span t-field="o.company_id.email"/></p>
+                                <p><strong>RNC:</strong> <span t-field="o.company_id.vat"/></p>
+                            </div>
+                        </div>
+                        
+                        <!-- Fecha de generación -->
+                        <div class="row mt-3">
+                            <div class="col-12">
+                                <p class="text-center text-muted"><small>Este documento se generó el <span t-esc="context_timestamp(datetime.datetime.now()).strftime('%Y-%m-%d %H:%M:%S')"/></small></p>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+
+    
+    <!-- Plantilla para etiqueta de código de barras de productos -->
+    <template id="report_product_barcode_label">
+        <t t-call="web.basic_layout">
+            <t t-foreach="docs" t-as="product">
+                <div class="page" style="text-align: center; padding: 0.5cm;">
+                    <div style="border: 1px solid #ddd; padding: 10px; max-width: 10cm; margin: 0 auto;">
+                        <h3 t-field="product.name" style="margin-top: 0;"/>
+                        <div t-if="product.default_code">
+                            <span t-field="product.default_code"/>
+                        </div>
+                        
+                        <div style="margin: 20px 0;">
+                            <img t-if="product.barcode" t-att-src="'/report/barcode/?type=Code128&amp;value=%s&amp;width=300&amp;height=80' % product.barcode"/>
+                            <div t-if="product.barcode" style="font-size: 14px; margin-top: 5px;">
+                                <span t-field="product.barcode"/>
+                            </div>
+                            <div t-if="not product.barcode" style="font-size: 14px; color: red; margin-top: 5px;">
+                                No tiene código de barras
+                            </div>
+                        </div>
+                        
+                        <div style="margin-top: 10px;">
+                            <span t-field="product.company_id.name"/>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </t>
+    </template>
+    
+    <!-- Acción para el reporte de etiqueta de producto -->
+    <record id="report_product_barcode" model="ir.actions.report">
+        <field name="name">Etiqueta de Código de Barras</field>
+        <field name="model">product.product</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">stock_barcode_transfer.report_product_barcode_label</field>
+        <field name="report_file">stock_barcode_transfer.report_product_barcode_label</field>
+        <field name="binding_model_id" ref="product.model_product_product"/>
+        <field name="binding_type">report</field>
+        <field name="print_report_name">'Etiqueta - %s' % (object.name)</field>
+    </record>
+</odoo>
