@@ -110,6 +110,22 @@ class StockLocationTransfer(models.Model):
         
         return True
     
+
+    def add_product_manually(self):
+        """Abrir asistente para añadir productos manualmente"""
+        self.ensure_one()
+        if self.state != 'draft':
+            raise UserError(_('Solo puede añadir productos en transferencias en estado borrador.'))
+        
+        return {
+            'name': _('Añadir Producto'),
+            'type': 'ir.actions.act_window',
+            'res_model': 'stock.location.transfer.add.product',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {'default_transfer_id': self.id}
+        }
+        
     def action_cancel(self):
         self.ensure_one()
         if self.state == 'done':

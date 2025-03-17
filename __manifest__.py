@@ -38,6 +38,7 @@
           'views/barcode_printer_views.xml',
           'views/product_views.xml',
           'reports/barcode_report.xml',
+          'views/stock_location_transfer_wizard_views.xml',
         # 'views/pos_order_views.xml',
         # 'views/print_menu_action.xml',
         #'views/product_cost.xml',

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Vista de formulario para el asistente de añadir producto -->
+    <record id="view_stock_location_transfer_add_product_form" model="ir.ui.view">
+        <field name="name">stock.location.transfer.add.product.form</field>
+        <field name="model">stock.location.transfer.add.product</field>
+        <field name="arch" type="xml">
+            <form string="Añadir Producto">
+                <group>
+                    <field name="transfer_id" invisible="1"/>
+                    <field name="product_id" options="{'no_create': True}"/>
+                    <field name="product_qty"/>
+                    <field name="product_uom_id" readonly="1" groups="uom.group_uom"/>
+                </group>
+                <footer>
+                    <button name="add_product" string="Añadir" type="object" class="btn-primary"/>
+                    <button string="Cancelar" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

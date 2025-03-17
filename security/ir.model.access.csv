@@ -7,3 +7,5 @@ access_stock_location_transfer_damage_wizard_user,stock.location.transfer.damage
 access_stock_location_transfer_damage_wizard_manager,stock.location.transfer.damage.wizard.manager,model_stock_location_transfer_damage_wizard,stock.group_stock_manager,1,1,1,1
 access_barcode_printer_user,barcode.printer.user,model_barcode_printer,stock.group_stock_user,1,0,0,0
 access_barcode_printer_manager,barcode.printer.manager,model_barcode_printer,stock.group_stock_manager,1,1,1,1
+access_stock_location_transfer_add_product_user,stock.location.transfer.add.product.user,model_stock_location_transfer_add_product,stock.group_stock_user,1,1,1,0
+access_stock_location_transfer_add_product_manager,stock.location.transfer.add.product.manager,model_stock_location_transfer_add_product,stock.group_stock_manager,1,1,1,1

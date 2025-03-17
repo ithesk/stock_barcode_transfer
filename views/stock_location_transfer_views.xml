@@ -75,6 +75,13 @@
                                     <field name="state" invisible="1"/>
                                 </tree>
                             </field>
+                             <!-- Añadir este bloque después del campo transfer_line_ids -->
+                            <div class="oe_right oe_button_box" name="manual_add_button" 
+                                attrs="{'invisible': [('state', '!=', 'draft')]}">
+                                <button name="add_product_manually" string="Añadir Producto Manualmente" 
+                                        type="object" class="oe_highlight" 
+                                        icon="fa-plus"/>
+                            </div>
                         </page>
                         <page string="Notas" name="notes">
                             <field name="note" placeholder="Añadir notas adicionales aquí..."/>
